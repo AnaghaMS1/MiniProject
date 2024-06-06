@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Handwritten Digit Recognition</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+        background-image: url('background.jpg');
+        background-size: cover;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    #content-container {
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+        color: #333;
+    }
+    #file-input {
+        margin-bottom: 20px;
+    }
+    #result-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        display: none;
+    }
+    th, td {
+        padding: 10px;
+        border: none;
+    }
+    #image-preview {
+        max-width: 100%;
+        display: none;
+        margin-top: 20px;
+    }
+    #predicted-digit {
+        display: none;
+    }
+    #predict-button {
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+<div id="content-container">
+<h1>Handwritten Digit Recognition</h1>
+<input type="file" id="file-input" accept=".jpg, .jpeg, .png" onchange="previewImage()">
+<button onclick="recognizeDigit()" id="predict-button">Predict Digit</button>
+<table id="result-table">
+    <thead>
+        <tr>
+            <th>Uploaded Image</th>
+            <th>Predicted Digit</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><img id="image-preview" src="" alt="Uploaded Image"></td>
+            <td id="predicted-digit"></td>
+        </tr>
+    </tbody>
+</table>
+</div>
+<script>
+function previewImage() {
+    var input = document.getElementById('file-input');
+    var preview = document.getElementById('image-preview');
+    var file = input.files[0];
+    var reader = new FileReader();
+    reader.onloadend = function () {
+        preview.src = reader.result;
+        preview.style.display = 'block';
+    }
+    if (file) {
+        reader.readAsDataURL(file);
+    } else {
+        preview.src = "";
+        preview.style.display = 'none';
+    }
+}
+async function recognizeDigit() {
+    var input = document.getElementById('file-input');
+    var file = input.files[0];
+    if (!file) {
+        alert("Please select an image file.");
+        return;
+    }
+    document.getElementById('result-table').style.display = 'table';
+    document.getElementById('predicted-digit').textContent = "Recognizing digit...";
+    document.getElementById('predicted-digit').style.display = 'block';
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+        const response = await fetch('/predict', {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json();
+        document.getElementById('predicted-digit').textContent = "Predicted Digit: " + result.prediction;
+    } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('predicted-digit').textContent = "Error recognizing digit.";
+    }
+}
+</script>
+</body>
+</html>
